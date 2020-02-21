@@ -18,7 +18,7 @@ To enable globus special remote follow these steps:
 1 - Grab repository from git
 
 ```
-git clone globus_tools
+git clone https://github.com/CONP-PCNO/globus_tools.git
 ```
 
 2 - Launch configuration file by passing the relative arguments for the dataset you are working with
