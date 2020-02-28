@@ -57,26 +57,56 @@ Now save your user ID:
 
 ``user_uuid=<your-user-ID>``
 
-Make a folder in your local machine which we can use to transfer data into. For example we can ``mkdir /home/dataset/`` and find the dataset path in
-the Globus shared point. We can ``/source/data`` as a sample same to illustrate the principle
+Make a folder in your local machine which we can use to transfer data into. For example we can ``mkdir /home/dataset/``. Then find the dataset path in
+the Globus shared point, which will be your ``file prefix``, the prefix path for all files and folders in the dataset. 
+We can use ``/source/data`` as a sample to illustrate the principle
 
-Now initiate the transfer:
+Now initiate the transfer using the download script in this folder:
 
 ``./download.py --source-endpoint $source_ep --destination-endpoint $your_ep --source-path /source/data/ --destination-path /home/dataset/ --user-uuid $user_uuid --delete``
 
-Transfer may take time. Check your ```/home/dataset/``` to make sure the transfer was successful.
+Transfer may take time. Check your ```/home/dataset/``` to make sure the transfer was successful. The dataset is ready to be added to CONP
 
 
 ### 2 - Load dataset to globus special remote for first time setup
 
-Once the desired dataset is downloaded, it can be added to datalad and CONP by using the guide adding_dataset_to_datalad.md. In this way, the dataset
-content is expected to be available to CONP users via datalad and git annex which will require a configured special remote to retrieve data when needed.
+Once the desired dataset is downloaded, it can be added to datalad and CONP by using the guide [adding_dataset_to_datalad.md](to be added). In this way, the dataset
+content is expected to be available to CONP users via datalad and git annex commands and to do so, sit annex will require a configured special remote to retrieve data when it requests it.
 The use of special remotes is in fact a strategy for git annex to manage very large datasets in a storage-friendly light-weight matter letting them reside 
 in different machines and only asking for and transferring them when needed. More information on special remotes is available [here](https://git-annex.branchable.com/special_remotes/)
 
-In this context, this step enables sharing information of the dataset living in Globus with git annex to establish future data transfer connections
-In other words, this step configures the globus special remote interface to work with the given dataset so that files can be transferred using the special remote
-and become available to CONP users. It is important to note that this step is a for a 'first time setup' of the special remote to work with this dataset
+In this context, this step enables sharing information of the dataset living in Globus with git annex to establish all future data transfer connections
+In other words, this step configures the globus special remote interface to work with the given dataset so that files can be transferred using the configured remote
+and become available to CONP users. It is important to note that this step is a 'first time setup' of the special remote to work with this dataset.
+
+2.1 - So let's go ahead and start the retrieving of the dataset information in Globus that git annex is interested in. First let's install some requirements.
+
+``pip install configparser``
+``pip install git-annex-remote-globus==1.0``
+
+2.2 - Then we define the dataset root location, which you can guess is your ``/home/dataset/``. We also need the ``file prefix`` specified above as an example and the shared
+endpoint name which will substitute the ``<dataset_name>``
+
+```./retrieve.py --path /home/dataset/ --endpoint dataset_name --fileprefix /source/data/ --encryption none```
+
+2.3 At this point we need to publish this remote configuration, hence we commit and push to the **git-annex branch** of the dataset. Note, this step is requited to
+enable users to install the dataset and use the git annex special remote! So test it yourself!
+
+##### Test step 2
+
+a) Go on github and grab the dataset repository:
+
+``datalad install -r https://github.com/conpdataset/dataset.git``
+
+``git-annex-remote-globus setup``
+
+``git annex enableremote globus``
+
+``git annex get path/to/file``
+
+
+
+
 
 ### 3 - Load dataset updates to globus remote via a crawler
 
