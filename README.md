@@ -2,7 +2,7 @@
 
 This repository gives administrators of datalad datasets in CONP the necessary tools to:
 
-1 - Download dataset data from Globus to be added to datalad/CONP
+### 1 - Download dataset data from Globus to be added to datalad/CONP
 
 This step involves the use of [Globus Transfer API](https://docs.globus.org/api/transfer/) to share data between a Globus 
 **shared endpoint** where the dataset resides and the administrator's [Globus personal endpoint](https://www.globus.org/globus-connect-personal) 
@@ -39,9 +39,32 @@ You should see your endpoint ID displayed. We will use this ID to trasfer files 
 
 That is your local file system ! So we enabled the wrapper we were talking about .... We are ready to set up the transfer to download the dataset
 
-1.3 - Now we are ready to initialize the data transfer from the selected Globus shared endpoint and the adiministrator's enpoint
+1.3 - Now we are ready to initialize the data transfer from the selected Globus shared endpoint and the administrator's endpoint:
 
-2 - Load dataset to globus special remote for first time setup
+Select the shared endpoint and store its ID into an environment variable (for simplicity). This is going to be the source endpoint. For example
+
+``source_ep=ddb59aef-6d04-11e5-ba46-22000b92c6ec``
+
+Do the same with your endpoint
+
+``your_ep=<endpoint-ID>``
+
+Now, find your user ID, which can be queried with the following command specifying your email address used to register in Globus
+
+``globus get-identities <your-email-address>``
+
+Now save your user ID:
+
+``user_uuid=<your-user-ID>``
+
+Make a folder in your local machine which we can use to transfer data into. For example we can ``mkdir /home/dataset/``
+
+Now initiate the transfer:
+
+``./download.py --source-endpoint $source_ep --destination-endpoint $your_ep --source-path /share/godata/ --destination-path /home/dataset/ --user-uuid $user_uuid --delete``
+
+
+### 2 - Load dataset to globus special remote for first time setup
 
 Once the desired dataset is downloaded, it can be added to datalad and CONP by using the guide adding_dataset_to_datalad.md. In this way, the dataset
 content is expected to be available to CONP users via datalad and git annex which will require a configured special remote to retrieve data when needed.
@@ -52,7 +75,7 @@ In this context, this step enables sharing information of the dataset living in 
 In other words, this step configures the globus special remote interface to work with the given dataset so that files can be transferred using the special remote
 and become available to CONP users. It is important to note that this step is a for a 'first time setup' of the special remote to work with this dataset
 
-3 - Load dataset updates to globus remote via a crawler
+### 3 - Load dataset updates to globus remote via a crawler
 
 In case the dataset content gets updated in Globus shared enpoint, we want these changes to reflect in the globus special remote and therefore, to be seen by git annex.
 A crawler would in fact perform checks on eventual enpoint changes and updates of the globus special remote configuration to reflect those changes.

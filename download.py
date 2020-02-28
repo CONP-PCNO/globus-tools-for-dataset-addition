@@ -358,19 +358,15 @@ def share_data(args):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
-        description='Copy data from your private endpoint to a shared one for'
-        'other people to access. You can share data with both individual users'
-        ' and groups.'
+        description='Copy data from a shared endpoint to your private one'
     )
     parser.add_argument(
         '--source-endpoint',
-        help='Source Endpoint UUID where your data is stored.'
+        help='Source Endpoint UUID where data is stored.'
     )
     parser.add_argument(
-        '--shared-endpoint',
-        help='The place you will share your data. Create a shared endpoint '
-             'by going to globus.org/app/transfer, navigating to your endpoint'
-             ' and clicking "share" on a folder.'
+        '--destination-endpoint',
+        help='The place you will transfer your data to'
     )
     parser.add_argument(
         '--source-path',
