@@ -57,11 +57,14 @@ Now save your user ID:
 
 ``user_uuid=<your-user-ID>``
 
-Make a folder in your local machine which we can use to transfer data into. For example we can ``mkdir /home/dataset/``
+Make a folder in your local machine which we can use to transfer data into. For example we can ``mkdir /home/dataset/`` and find the dataset path in
+the Globus shared point. We can ``/source/data`` as a sample same to illustrate the principle
 
 Now initiate the transfer:
 
-``./download.py --source-endpoint $source_ep --destination-endpoint $your_ep --source-path /share/godata/ --destination-path /home/dataset/ --user-uuid $user_uuid --delete``
+``./download.py --source-endpoint $source_ep --destination-endpoint $your_ep --source-path /source/data/ --destination-path /home/dataset/ --user-uuid $user_uuid --delete``
+
+Transfer may take time. Check your ```/home/dataset/``` to make sure the transfer was successful.
 
 
 ### 2 - Load dataset to globus special remote for first time setup
