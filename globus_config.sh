@@ -21,4 +21,4 @@ else
 fi
 
 
-${CURRENT_DIR}/retrieve --path ${DATASET_ROOT_PATH} --endpoint frdr_prod_2 --fileprefix /5/published/publication_170/submitted_data --encryption none
+${CURRENT_DIR}/retrieve.py --path ${DATASET_ROOT_PATH} --endpoint frdr_prod_2 --fileprefix /5/published/publication_170/submitted_data --encryption none
