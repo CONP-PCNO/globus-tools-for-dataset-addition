@@ -6,23 +6,23 @@ This repository gives administrators of datalad datasets in CONP the necessary t
 
 This step involves the use of [Globus Transfer API](https://docs.globus.org/api/transfer/) to share data between a Globus 
 **shared endpoint** where the dataset resides and the administrator's [Globus personal endpoint](https://www.globus.org/globus-connect-personal) 
-which, as we will see, it is nothing but a wrapper which turns the administrator's laptop into a Globus endpoint to enable transferring of 
-files from the shared endpoint. A shared enpoint instead, is a location in the Globus cloud where data are uploaded and made available to all Globus users.
+which, as we will see, it is nothing but a wrapper which turns the administrator's laptop into a Globus endpoint to enable transferring 
+files from the shared endpoint (or endpoints in general). A shared enpoint instead, is a location in the Globus cloud where data get uploaded and made available to all Globus users (shared).
 The reason for using a wrapper (called Globus connect personal) at this point is that Globus only 'knows' the concept of an endpoint (the main data type) and can only transfer data between 
-endpoints, hence it is required that a machine is turned into an endpoint 'type' (wrapping) to download data from some other endpoint to its local file system.
+endpoints, hence it is required that a machine is turned into an endpoint 'type' (wrapping) to transfer data to it.
 
-1.1 - So, first off, the administrator has to install and configure Globus Connect Personal. To do so, links for all major operating
+1.1 - So, first off, the administrator has to install and configure Globus Connect Personal to turn hir/her laptop into an endpoint. To do so, links for all major operating
 systems are available [here](https://www.globus.org/globus-connect-personal). [This link](https://docs.globus.org/how-to/globus-connect-personal-linux/)
 gives an example use with linux. In any case, the administrator will be required to choose an endpoint name, generate setup keys for installation and 
 install and connect to Globus Connect Personal. Assuming the steps in the guide liked above are performed, it is possible to connect to Globus Connect Personal:
 
 ``./globusconnect &`` 
 
-and clocking 'connect' on the icon. Globus Online will appear connected with green light if everything went well.
+and clicking 'connect' on the icon. Globus Online will appear connected with green light if everything went well.
 
 1.2 - Creation of an endpoint can either be done via the [Globus user interface](https://app.globus.org/) or 
 via the ``globus`` command provided by the Globus [Command Line Interface (CLI)](https://docs.globus.org/cli/installation/). These two options
-are explained in the [guide](https://docs.globus.org/how-to/globus-connect-personal-linux/) more in details and which is available for all OS. 
+are explained in the [guide](https://docs.globus.org/how-to/globus-connect-personal-linux/) in more details which is available for all OS. 
 To install and use the command line, make sure you install the globus cli:
 
 ```pip install globus-cli```
