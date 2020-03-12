@@ -70,24 +70,27 @@ Transfer may take time. Check your ```/home/dataset/``` to make sure the transfe
 
 ### 2 - Load dataset to globus special remote for first time setup
 
-Once the desired dataset is downloaded, it can be added to datalad and CONP by using the guide [adding_dataset_to_datalad.md](to be added). In this way, the dataset
-content is expected to be available to CONP users via datalad and git annex commands and to do so, sit annex will require a configured special remote to retrieve data when it requests it.
-The use of special remotes is in fact a strategy for git annex to manage very large datasets in a storage-friendly light-weight matter letting them reside 
-in different machines and only asking for and transferring them when needed. More information on special remotes is available [here](https://git-annex.branchable.com/special_remotes/)
+Once the desired dataset is downloaded, it can be added to datalad and CONP by using the guide [adding_dataset_to_datalad.md](https://github.com/CONP-PCNO/conp-documentation/blob/experimental_guide_update/datalad_dataset_addition_procedure.md)
+and the [datalad_dataset_addition_experimental.md](https://github.com/CONP-PCNO/conp-documentation/blob/experimental_guide_update/datalad_dataset_addition_experimental.md). After following the guides, the dataset
+content is expected to be available to CONP users via datalad and git annex commands and to do so, git annex will require a configured special remote to retrieve data when it requests it.
+The use of special remotes is in fact a strategy for git annex to manage very large datasets in a storage-friendly light-weight manner letting them reside 
+in different machines and only asking for their transfer when needed. More information on special remotes is available [here](https://git-annex.branchable.com/special_remotes/)
 
 In this context, this step enables sharing information of the dataset living in Globus with git annex to establish all future data transfer connections
 In other words, this step configures the globus special remote interface to work with the given dataset so that files can be transferred using the configured remote
 and become available to CONP users. It is important to note that this step is a 'first time setup' of the special remote to work with this dataset.
+
+At this point is is assumed that a new datalad dataset was generated at ```conp-dataset/project/<new_dataset>``` by following the guides above. We will work with this dataset to initialize globus remote
 
 2.1 - So let's go ahead and start the retrieving of the dataset information in Globus that git annex is interested in. First let's install some requirements.
 
 ``pip install configparser``
 ``pip install git-annex-remote-globus==1.0``
 
-2.2 - Then we define the dataset root location, which you can guess is your ``/home/dataset/``. We also need the ``file prefix`` specified above as an example and the shared
-endpoint name which will substitute the ``<dataset_name>``
+2.2 - Then we define the dataset root location, which you can guess is your ``conp-dataset/project/<new_dataset>``. We also need the ``file prefix`` which should match the fixed path
+to files in the dataset and can be found in Globus.org interface. Here we use the example given in the previous section
 
-```./retrieve.py --path /home/dataset/ --endpoint dataset_name --fileprefix /source/data/ --encryption none```
+```./retrieve.py --path conp-dataset/project/<new_dataset> --endpoint dataset_name --fileprefix /source/data/ --encryption none```
 
 2.3 At this point we need to publish this remote configuration, hence we commit and push to the **git-annex branch** of the dataset. Note, this step is requited to
 enable users to install the dataset and use the git annex special remote! So test it yourself!
@@ -119,37 +122,4 @@ After correct initialization, other users will be able to install the given data
 Note: This process needs to be followed **once** by administrators to enable users to work with the dataset in the future. 
 
 Therefore, pushing to git annex is a must (see How to use)
-
-
-## How to use
-
-Globus special remote can be configured to work for a given dataset by launching the ```globus_config.sh``` script.
-
-To enable globus special remote follow these steps:
-
-1 - Grab repository from git
-
-```
-git clone https://github.com/CONP-PCNO/globus_tools.git
-```
-
-2 - Launch configuration file by passing the relative arguments for the dataset you are working with
-
-```
-./globus_config.sh -d <dataset_root> --endpoint <globus_endpoint> --prefix <files_prefix>
-```
-
-Note: the flags --endpoint and --prefix refer to [Globus](https://auth.globus.org) specific information of your dataset
-
-
-3 - Push to git-annex branch to publish
-
-
-
-## How it works
-
-By using the ```git-annex-remote-globus``` API, all dataset files will be recursively registered with globus special remote after successful authentication in [Globus](https://auth.globus.org) and
-first time remote initialization with the git annex command ```initremote```
-
-For more details on files registration with globus, see [globus](https://github.com/CONP-PCNO/git-annex-remote-globus) special remote
  

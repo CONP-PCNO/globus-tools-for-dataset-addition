@@ -1,39 +1,12 @@
 #!/usr/bin/env python
 
 """
-Copy data from your private endpoint to a shared one for other people
-to access. You can share data with both individual users and groups.
+Copy data from a shared endpoint to your private endpoint
 
-Required: You create a shared endpoint by going to https://app.globus.org
-navigating to an Endpoint, and clicking "share". You can use "Globus Tutorial
-Endpoint 2" for testing.
+Required: You create a private endpoint by either going to https://app.globus.org
+navigating to Endpoints then clicking Create a personal endpoint (manual set up) or alternatively
+bu following the guides available based on your OS found at https://www.globus.org/globus-connect-personal
 
-Choose a data source. You can use "Globus Tutorial Endpoint 1" for testing.
-
-Register your own app at developers.globus.org. Configure as follows:
-Native App:
-    * "Redirect URLs" -- Set to "https://auth.globus.org/v2/web/auth-code".
-        You can setup your own server for distributing auth codes if you wish.
-    * Scopes:
-        [openid profile urn:globus:auth:scope:transfer.api.globus.org:all]
-        openid and profile are required for auth, transfer.api.globus.org
-        for transfers.
-    * Check "Native App".
-Confidential App [Client Credentials Grant]:
-    * "Redirect URLs" -- Set to "https://auth.globus.org/v2/web/auth-code".
-        Confidential apps also allow you to setup your own server for three-
-        legged-auth with auth.globus.org if you wish. You may therefore put
-        https://example.com/oauth_callback/ instead.
-    * Scopes:
-        [urn:globus:auth:scope:transfer.api.globus.org:all]
-        Only transfer is required, since your bot will be using client_secret
-        to authenticate. [openid profile] are required if you setup your own
-        three-legged-auth server and want to allow users to login to it.
-    * Uncheck "Native App".
-
-Tutorial Endpoint IDs
-Globus Tutorial Endpoint 1: ddb59aef-6d04-11e5-ba46-22000b92c6ec
-Globus Tutorial Endpoint 2: ddb59af0-6d04-11e5-ba46-22000b92c6ec
 """
 
 from __future__ import print_function
@@ -48,7 +21,7 @@ from fair_research_login import NativeClient
 # Both Native App and Client Credential authentication require Client IDs.
 # Create your app at developers.globus.org. The following id is for testing
 # only and should not be relied upon (You should create your own app).
-CLIENT_ID = '079bdf4e-9666-4816-ac01-7eab9dc82b93'
+CLIENT_ID = '01589ab6-70d1-4e1c-b33d-14b6af4a16be'
 
 # Client Secret is only needed for Confidential apps. Make your app
 # confidential instead of native by _not_ checking the 'Native App' checkbox
@@ -90,25 +63,6 @@ SCOPES = ('openid email profile '
 TOKEN_FILE = 'refresh-tokens.json'
 
 APP_NAME = 'Share Data Example App'
-
-# Example: Globus Tutorial Endpoint 1
-source_endpoint = 'ddb59aef-6d04-11e5-ba46-22000b92c6ec'
-
-# Choose which shared folder you want to use.
-# Example: Go to https://app.globus.org/ and select:
-#     Endpoint: Globus Tutorial Endpoint 2
-#     Path: /~/
-#     And click 'share' to create your home directory as the shared endpoint.
-shared_endpoint = ''
-
-# Source data. The example below is three files on Globus Tutorial Endpoint 1
-source_path = '/share/godata'
-
-# Destination on the shared endpoint. Note that this example copies files
-# to the 'root' of the _shared_ endpoint, which in the example above we
-# selected as '/~/'. The final result of this example will be three files
-# stored on Globus Tutorial Endpoint 2 at /~/godata/.
-destination_path = '/'
 
 get_input = getattr(__builtins__, 'raw_input', input)
 
@@ -187,14 +141,14 @@ def get_confidential_app_authorizer(client_id, client_secret):
 
 def share_data(args):
 
-    user_source_endpoint = args.source_endpoint or source_endpoint
-    user_shared_endpoint = args.shared_endpoint or shared_endpoint
-    if not user_shared_endpoint:
+    user_source_endpoint = args.source_endpoint
+    user_destination_endpoint = args.destination_endpoint
+    if not user_destination_endpoint:
         eprint('Invalid shared endpoint')
         sys.exit(1)
 
-    user_source_path = args.source_path or source_path
-    user_destination_path = args.destination_path or destination_path
+    user_source_path = args.source_path
+    user_destination_path = args.destination_path
     if not user_source_path.startswith('/'):
         eprint('Source path must be absolute')
         sys.exit(1)
@@ -220,22 +174,24 @@ def share_data(args):
         raise ValueError('Invalid Authenticator, this script only understands '
                          'Native and Client Credential')
 
-    # look for an identity uuid for the specified identity username
-    username_uuid = None
-    if args.username:
-        ac = globus_sdk.AuthClient(authorizer=authorizer)
-        r = ac.get_identities(usernames=args.username)
-        if not len(r['identities']):
-            eprint('No such identity username \'{}\''.format(args.username))
-            exit(1)
-        username_uuid = r['identities'][0]['id']
+    # # look for an identity uuid for the specified identity username
+    # username_uuid = None
+    # if args.user_uuid:
+    #     print(args.user_uuid)
+    #     ac = globus_sdk.AuthClient(authorizer=authorizer)
+    #     r = ac.get_identities(usernames=args.user_uuid)
+    #     print(r)
+    #     if not len(r['identities']):
+    #         eprint('No such identity username \'{}\''.format(args.user_uuid))
+    #         exit(1)
+    #     username_uuid = r['identities'][0]['id']
 
     # create a TransferClient object
     tc = globus_sdk.TransferClient(authorizer=authorizer)
 
     # check if a destination directory exists at all
     try:
-        tc.operation_ls(user_shared_endpoint, path=user_destination_path)
+        tc.operation_ls(user_destination_endpoint, path=user_destination_path)
     except TransferAPIError as e:
         eprint(e)
         sys.exit(1)
@@ -251,7 +207,7 @@ def share_data(args):
     directory
     """
     try:
-        tc.operation_ls(user_shared_endpoint, path=destination_directory)
+        tc.operation_ls(user_destination_endpoint, path=destination_directory)
         if not args.delete:
             eprint('Destination directory exists. Delete the directory or '
                    'use --delete option')
@@ -260,7 +216,7 @@ def share_data(args):
               .format(destination_directory))
         ddata = globus_sdk.DeleteData(
                 tc,
-                user_shared_endpoint,
+                user_destination_endpoint,
                 label='Share Data Example',
                 recursive=True)
         ddata.add_item(destination_directory)
@@ -277,7 +233,7 @@ def share_data(args):
     try:
         print('Creating destination directory {}'
               .format(destination_directory))
-        tc.operation_mkdir(user_shared_endpoint, destination_directory)
+        tc.operation_mkdir(user_destination_endpoint, destination_directory)
     except TransferAPIError as e:
         eprint(e)
         sys.exit(1)
@@ -295,7 +251,7 @@ def share_data(args):
     #     try:
     #         print('Granting user, {}, read access to the destination directory'
     #               .format(args.user_uuid))
-    #         tc.add_endpoint_acl_rule(user_shared_endpoint, rule_data)
+    #         tc.add_endpoint_acl_rule(user_destination_endpoint, rule_data)
     #     except TransferAPIError as e:
     #         if e.code != u'Exists':
     #             eprint(e)
@@ -313,7 +269,7 @@ def share_data(args):
     #     try:
     #         print('Granting user, {}, read access to the destination directory'
     #               .format(username_uuid))
-    #         tc.add_endpoint_acl_rule(user_shared_endpoint, rule_data)
+    #         tc.add_endpoint_acl_rule(user_destination_endpoint, rule_data)
     #     except TransferAPIError as e:
     #         if e.code != u'Exists':
     #             eprint(e)
@@ -331,7 +287,7 @@ def share_data(args):
     #     try:
     #         print('Granting group, {}, read access to '
     #               .format(args.group_uuid))
-    #         tc.add_endpoint_acl_rule(user_shared_endpoint, rule_data)
+    #         tc.add_endpoint_acl_rule(user_destination_endpoint, rule_data)
     #     except TransferAPIError as e:
     #         if e.code != u'Exists':
     #             eprint(e)
@@ -340,7 +296,7 @@ def share_data(args):
     # transfer data - source directory recursively
     tdata = globus_sdk.TransferData(tc,
                                     user_source_endpoint,
-                                    user_shared_endpoint,
+                                    user_destination_endpoint,
                                     label='Share Data Example')
     tdata.add_item(user_source_path, destination_directory, recursive=True)
     try:
@@ -374,20 +330,17 @@ if __name__ == '__main__':
     parser.add_argument(
         '--destination-path',
     )
+    # parser.add_argument(
+    #     '--client-id',
+    #     help='Your App Client ID'
+    # )
     parser.add_argument(
-            '--group-uuid',
-            help='UUID of a group transferred data will be shared with')
+        '--user-uuid',
+        help='UUID of a user to whom data are transferred')
     parser.add_argument(
-            '--user-uuid',
-            help='UUID of a user transferred data will be shared with')
-    parser.add_argument(
-            '--username',
-            help='Identity username of a user transferred data will be shared '
-            'with, e.g. johndoe@uchicago.edu')
-    parser.add_argument(
-            '--delete', action='store_true',
-            help='Delete a destination directory if already exists before '
-            'transferring data')
+        '--delete', action='store_true',
+        help='Delete a destination directory if already exists before '
+        'transferring data')
     parser.add_argument('--auth', choices=APP_AUTHENTICATORS,
                         default=AUTHENTICATION)
     parser.add_argument('--client-secret')
