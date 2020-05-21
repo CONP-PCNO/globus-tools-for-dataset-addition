@@ -85,10 +85,14 @@ At this point is is assumed that a new datalad dataset was generated at ```conp-
 2.1 - So let's go ahead and start the retrieving of the dataset information in Globus that git annex is interested in. First let's install some requirements.
 
 ``pip install configparser``
-``pip install git-annex-remote-globus==1.0``
+``pip install git-annex-remote-globus``
 
 2.2 - Then we define the dataset root location, which you can guess is your ``conp-dataset/project/<new_dataset>``. We also need the ``file prefix`` which should match the fixed path
 to files in the dataset and can be found in Globus.org interface. Here we use the example given in the previous section
+
+```cd conp-dataset/project/<new_dataset>```
+
+```git annex initremote globus type=external externaltype=globus encryption=none endpoint=dataset_name | dataset_ID fileprefix=source/data```
 
 ```./retrieve.py --path conp-dataset/project/<new_dataset> --endpoint dataset_name --fileprefix /source/data/ --encryption none```
 

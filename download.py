@@ -22,10 +22,12 @@ from fair_research_login import NativeClient
 # Create your app at developers.globus.org. The following id is for testing
 # only and should not be relied upon (You should create your own app).
 CLIENT_ID = '01589ab6-70d1-4e1c-b33d-14b6af4a16be'
+# CLIENT_ID = '29755a43-66b8-455d-a876-e6a049a79f4c'
 
 # Client Secret is only needed for Confidential apps. Make your app
 # confidential instead of native by _not_ checking the 'Native App' checkbox
-# on developers.globus.org for your app.
+# on developers.globus./home/giuly/Documents/NeuroHub/my-conp-dataset/conp-datasetorg for your app.
+# CLIENT_SECRET = 'Mako83daiAggRilawcvjNuO5JoW9EwmalTfSQEi/Wbg='
 CLIENT_SECRET = ''
 
 # Native is better for user machines, where the user is capable of hitting
