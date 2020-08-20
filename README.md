@@ -80,23 +80,27 @@ In this context, this step enables sharing information of the dataset living in 
 In other words, this step configures the globus special remote interface to work with the given dataset so that files can be transferred using the configured remote
 and become available to CONP users. It is important to note that this step is a 'first time setup' of the special remote to work with this dataset.
 
-At this point is is assumed that a new datalad dataset was generated at ```conp-dataset/project/<new_dataset>``` by following the guides above. We will work with this dataset to initialize globus remote
+At this point is is assumed that a new datalad dataset was generated at ```conp-dataset/project/<newprojectname>``` by following the guides above. We will work with this dataset to initialize globus remote
 
 2.1 - So let's go ahead and start the retrieving of the dataset information in Globus that git annex is interested in. First let's install some requirements.
 
-``pip install configparser``
-``pip install git-annex-remote-globus``
+```pip install configparser```
+```pip install git-annex-remote-globus```
 
-2.2 - Then we define the dataset root location, which you can guess is your ``conp-dataset/project/<new_dataset>``. We also need the ``file prefix`` which should match the fixed path
-to files in the dataset and can be found in Globus.org interface. Here we use the example given in the previous section
+2.2 - Then we make sure we are in the new dataset root ``conp-dataset/project/<newprojectname>``. The ``fileprefix`` and ``endpoint`` can 
+be found in Globus.org dataset page (metadata). The `fileprefix` is the fixed path before the dataset directories. The remote must be initialized
 
-```cd conp-dataset/project/<new_dataset>```
 
-```git annex initremote globus type=external externaltype=globus encryption=none endpoint=dataset_name | dataset_ID fileprefix=source/data```
+```cd conp-dataset/project/<newprojectname>``` if you are not there
 
-```./retrieve.py --path conp-dataset/project/<new_dataset> --endpoint dataset_name --fileprefix /source/data/ --encryption none```
+```git annex initremote globus type=external externaltype=globus encryption=none endpoint=(dataset_name OR endpoint_ID) fileprefix=fixed/path/to/data```
 
-2.3 At this point we need to publish this remote configuration, hence we commit and push to the **git-annex branch** of the dataset. Note, this step is requited to
+2.3 - We can then retrieve information about the dataset files by using the retrieve function available in the globus tools repository
+
+```path/to/globus_tools/retrieve.py --path conp-dataset/project/<new_dataset> --endpoint dataset_name --fileprefix fixed/path/to/data --encryption none```
+
+
+2.4 - At this point we need to publish this remote configuration, hence we commit and push to the **git-annex branch** of the dataset. Note, this step is requited to
 enable users to install the dataset and use the git annex special remote! So test it yourself!
 
 ##### Test step 2

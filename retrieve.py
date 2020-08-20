@@ -9,10 +9,11 @@ import configparser
 
 class Retrieve:
 
-    def __init__(self, dataset_path, dataset_name, remote_prefix, encryption):
+    def __init__(self, dataset_path, dataset_name, remote_prefix, encryption, clean=False):
         self.dataset_path = dataset_path
         self.remote_prefix = remote_prefix
         self.dataset_name = dataset_name
+        self.clean = clean
         self.url_prefix = 'globus://'
         self.annex_uuid = None
         self.encryption = encryption
@@ -98,25 +99,45 @@ class Retrieve:
             print('The following exception was raised while retrieving files: ' + str(ex))
             sys.exit()
 
-    def _set_present_key(self, key):
+    def _set_present_key(self, key, val):
         # set present key
-        setpresentkey_command = ['git', 'annex', 'setpresentkey', key, self.annex_uuid, '1']
+        setpresentkey_command = ['git', 'annex', 'setpresentkey', key, self.annex_uuid, str(val)]
         process = subprocess.Popen(setpresentkey_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         _, error = process.communicate()
         return error
 
     @staticmethod
-    def _register_url(key, path):
+    def _register_url(key, url):
         # register url
-        registerurl_command = ['git', 'annex', 'registerurl', key, path]
+        registerurl_command = ['git', 'annex', 'registerurl', key, url]
+        process = subprocess.Popen(registerurl_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        _, error = process.communicate()
+        return error
+
+    @staticmethod
+    def _rm_url(file_path, url):
+        # register url
+        registerurl_command = ['git', 'annex', 'rmurl', file_path, url]
         process = subprocess.Popen(registerurl_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         _, error = process.communicate()
         return error
 
     def process(self, key, path):
         # TODO: add count of errors
-        self._execute_cmd(self._set_present_key(key), str('An error occurred during setpresent key with path: ' + path))
-        self._execute_cmd(self._register_url(key, path), str('An error occurred during url registration with path: ' + path))
+        if self.clean:
+            self._execute_cmd(self._set_present_key(key, 0),
+                              str('An error occurred during setpresent 0 key with path: ' + path))
+            file_path = path.split(self.remote_prefix)[1]
+            # make sure the file path is valid
+            if file_path.startswith('/'):
+                file_path = file_path[1:]
+            self._execute_cmd(self._rm_url(file_path, path),
+                              str('An error occurred during url removal with path: ' + path))
+        else:
+            self._execute_cmd(self._set_present_key(key, 1),
+                              str('An error occurred during setpresent 1 key with path: ' + path))
+            self._execute_cmd(self._register_url(key, path),
+                              str('An error occurred during url registration with path: ' + path))
 
 
 def main():
@@ -126,13 +147,17 @@ def main():
     parser.add_argument('--endpoint', type=str, help='Remote dataset endpoint name')
     parser.add_argument('--fileprefix', type=str, help='Remote dataset files prefix')
     parser.add_argument('--encryption', type=str, default='none', help='Encryption mode')
+    parser.add_argument('--clean', action='store_true', help='Specified to clean the repository from urls')
     args = parser.parse_args()
     # Start retrieving
-    master = Retrieve(args.path, args.endpoint, args.fileprefix, args.encryption)
+    master = Retrieve(args.path, args.endpoint, args.fileprefix, args.encryption, args.clean)
     master.initialize()
     master.retrieve_files(args.path, master.get_remote_path())
     # TODO:count retrieved files below
-    print("Files successfully retrieved")
+    if args.clean:
+        print("URLs successfully removed")
+    else:
+        print("Files successfully retrieved")
 
 
 if __name__ == "__main__":
